@@ -6,6 +6,9 @@
     terminate/1
 ]).
 
+-include("colors.hrl").
+-include("glyphs.hrl").
+
 -record(state, {
     cases = []
 }).
@@ -27,16 +30,11 @@ terminate(_State = #state{cases = Cases}) ->
     io:put_chars(user, ["\e[0m", "\r\n"]).
 
 report({passed, Suite, TestCase}) ->
-    io:put_chars(user, ["  ", color(passed), io_lib:format("~s.~s", [Suite, TestCase]), " passed", eol()]);
+    io:put_chars(user, ["  ", color(passed), ?TEST_PASSED_GLYPH, " ", io_lib:format("~s.~s", [Suite, TestCase]), " passed", eol()]);
 report({failed, Suite, TestCase}) ->
-    io:put_chars(user, ["  ", color(failed), io_lib:format("~s.~s", [Suite, TestCase]), " failed", eol()]);
+    io:put_chars(user, ["  ", color(failed), ?TEST_FAILED_GLYPH, " ", io_lib:format("~s.~s", [Suite, TestCase]), " failed", eol()]);
 report({skipped, Suite, TestCase}) ->
-    io:put_chars(user, ["  ", color(skipped), io_lib:format("~s.~s", [Suite, TestCase]), " skipped", eol()]).
-
--define(COLOR_RED, "\e[0;32m").
--define(COLOR_GREEN, "\e[0;31m").
--define(COLOR_YELLOW, "\e[0;33m").
--define(COLOR_MAGENTA, "\e[0;35m").
+    io:put_chars(user, ["  ", color(skipped), ?TEST_SKIPPED_GLYPH, " ", io_lib:format("~s.~s", [Suite, TestCase]), " skipped", eol()]).
 
 color(passed) -> ?COLOR_GREEN;
 color(failed) -> ?COLOR_RED;
