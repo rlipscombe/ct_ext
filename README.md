@@ -10,6 +10,8 @@ I plan to add other hooks in future.
 
 ## Usage
 
+This project only supports `erlang.mk` or directly using `ct_run`, since I'm not sure that `rebar3` needs it.
+
 ### Using `erlang.mk`
 
 ```makefile
@@ -25,6 +27,10 @@ CT_OPTS = -ct_hooks $(CT_HOOKS) $(CT_OPTS)
 ```sh
 make ct
 ```
+
+## Demonstration
+
+Run `make ct` in this project.
 
 ## Debugging problems with the hook
 
