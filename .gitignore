@@ -1,0 +1,3 @@
+*.d
+ebin/
+.erlang.mk/
