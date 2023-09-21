@@ -25,3 +25,10 @@ CT_OPTS = -ct_hooks $(CT_HOOKS) $(CT_OPTS)
 ```sh
 make ct
 ```
+
+## Debugging problems with the hook
+
+1. Common Test outputs the path of the `all_runs.html` file. Open that file.
+2. Click on the most-recent test run.
+3. Click on the "Common Test Framework Log" button.
+4. Hook errors are usually in the "Progress Log" part of the page.
