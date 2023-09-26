@@ -93,7 +93,7 @@ get_env_color(Key, Default) ->
 
 format_elapsed_time(Elapsed) ->
     ElapsedMs = erlang:convert_time_unit(Elapsed, native, millisecond),
-    [" (", format_elapsed_time_ms(ElapsedMs), ")"].
+    [?COLOR_BRIGHT_BLACK, " (", format_elapsed_time_ms(ElapsedMs), ")"].
 
 format_elapsed_time_ms(ElapsedMs) ->
     % TODO: Human readable timestamps for longer periods.
