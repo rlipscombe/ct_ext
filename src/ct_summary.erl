@@ -17,7 +17,12 @@
     cases = []
 }).
 
+-define(APPLICATION, ct_report).
+
 init(_Id, _Opts) ->
+    % Load application environment.
+    application:load(?APPLICATION),
+
     % For some reason, Erlang doesn't output Unicode correctly when -noinput or -noshell are specified.
     % Fix that by setting the option back.
     io:setopts(standard_io, [{encoding, unicode}]),
@@ -79,9 +84,12 @@ report_test_case(Color, Glyph, Suite, TestCase, Suffix, StartedAt, EndedAt) ->
         eol()
     ]).
 
-color(passed) -> ?COLOR_DARK_GREEN;
-color(failed) -> ?COLOR_DARK_RED;
-color(skipped) -> ?COLOR_DARK_YELLOW.
+color(passed) -> get_env_color(passed, ?COLOR_DARK_GREEN);
+color(failed) -> get_env_color(failed, ?COLOR_DARK_RED);
+color(skipped) -> get_env_color(skipped, ?COLOR_DARK_YELLOW).
+
+get_env_color(Key, Default) ->
+    proplists:get_value(Key, application:get_env(ct_report, colors, []), Default).
 
 format_elapsed_time(Elapsed) ->
     ElapsedMs = erlang:convert_time_unit(Elapsed, native, millisecond),
