@@ -79,9 +79,9 @@ report_test_case(Color, Glyph, Suite, TestCase, Suffix, StartedAt, EndedAt) ->
         eol()
     ]).
 
-color(passed) -> ?COLOR_GREEN;
-color(failed) -> ?COLOR_RED;
-color(skipped) -> ?COLOR_YELLOW.
+color(passed) -> ?COLOR_DARK_GREEN;
+color(failed) -> ?COLOR_DARK_RED;
+color(skipped) -> ?COLOR_DARK_YELLOW.
 
 format_elapsed_time(Elapsed) ->
     ElapsedMs = erlang:convert_time_unit(Elapsed, native, millisecond),
