@@ -84,16 +84,23 @@ report_test_case(Color, Glyph, Suite, TestCase, Suffix, StartedAt, EndedAt) ->
         eol()
     ]).
 
-color(passed) -> get_env_color(passed, ?COLOR_DARK_GREEN);
-color(failed) -> get_env_color(failed, ?COLOR_DARK_RED);
-color(skipped) -> get_env_color(skipped, ?COLOR_DARK_YELLOW).
+color(Key) -> get_env_color(Key, get_default_color(Key), os:getenv("NO_COLOR")).
 
-get_env_color(Key, Default) ->
-    proplists:get_value(Key, application:get_env(ct_report, colors, []), Default).
+get_default_color(passed) -> ?COLOR_DARK_GREEN;
+get_default_color(failed) -> ?COLOR_DARK_RED;
+get_default_color(skipped) -> ?COLOR_DARK_YELLOW;
+get_default_color(elapsed) -> ?COLOR_BRIGHT_BLACK.
+
+% See https://no-color.org/; if NO_COLOR is present and not empty, colours should be disabled.
+% i.e. if NO_COLOR is absent or empty, colours should be enabled.
+get_env_color(Key, Default, NoColor) when NoColor =:= false; NoColor =:= "" ->
+    proplists:get_value(Key, application:get_env(ct_report, colors, []), Default);
+get_env_color(_Key, _Default, _NoColor) ->
+    "".
 
 format_elapsed_time(Elapsed) ->
     ElapsedMs = erlang:convert_time_unit(Elapsed, native, millisecond),
-    [?COLOR_BRIGHT_BLACK, " (", format_elapsed_time_ms(ElapsedMs), ")"].
+    [color(elapsed), " (", format_elapsed_time_ms(ElapsedMs), ")"].
 
 format_elapsed_time_ms(ElapsedMs) ->
     % TODO: Human readable timestamps for longer periods.
