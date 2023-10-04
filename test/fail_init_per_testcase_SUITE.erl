@@ -1,4 +1,4 @@
--module(fail_init_SUITE).
+-module(fail_init_per_testcase_SUITE).
 -export([all/0, init_per_testcase/2, not_run/1]).
 
 all() -> [not_run].
