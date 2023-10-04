@@ -90,7 +90,7 @@ report_test_case(Color, Glyph, Suite, TestCase, Suffix, StartedAt, EndedAt) ->
         " ",
         io_lib:format("~s.~s", [Suite, TestCase]),
         Suffix,
-        format_elapsed_time(EndedAt - StartedAt),
+        format_elapsed_time(StartedAt, EndedAt),
         eol()
     ]).
 
@@ -118,6 +118,11 @@ get_env_color(Key, Default, NoColor) when NoColor =:= false; NoColor =:= "" ->
     proplists:get_value(Key, application:get_env(ct_report, colors, []), Default);
 get_env_color(_Key, _Default, _NoColor) ->
     "".
+
+format_elapsed_time(StartedAt, EndedAt) when is_integer(StartedAt), is_integer(EndedAt) ->
+    format_elapsed_time(EndedAt - StartedAt);
+format_elapsed_time(_StartedAt, _EndedAt) ->
+    [].
 
 format_elapsed_time(Elapsed) ->
     ElapsedMs = erlang:convert_time_unit(Elapsed, native, millisecond),
