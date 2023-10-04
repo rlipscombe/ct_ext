@@ -148,10 +148,12 @@ format_stacktrace([{test_server, _, _, _} | _]) ->
 format_stacktrace([MFA | Stack]) ->
     [format_mfa(MFA), format_stacktrace(Stack)].
 
-format_mfa({M, F, A, Props}) when is_integer(A) ->
+format_mfa({M, F, Args, Props}) when is_list(Args) ->
+    format_mfa({M, F, length(Args), Props});
+format_mfa({M, F, Arity, Props}) when is_integer(Arity) ->
     File = proplists:get_value(file, Props),
     Line = proplists:get_value(line, Props),
-    format_mfa(M, F, A, File, Line).
+    format_mfa(M, F, Arity, File, Line).
 
 format_mfa(M, F, A, undefined, undefined) ->
     io_lib:format("      at ~s:~s/~B~n", [M, F, A]);
