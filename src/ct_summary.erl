@@ -49,7 +49,7 @@ post_end_per_testcase(
     State = #state{case_started_at = StartedAt, cases = Cases}
 ) ->
     EndedAt = erlang:monotonic_time(),
-    {Return, State#state{cases = [{failed, Suite, TestCase, StartedAt, EndedAt} | Cases]}}.
+    {Return, State#state{cases = [{failed, Suite, TestCase, Return, StartedAt, EndedAt} | Cases]}}.
 
 on_tc_skip(Suite, TestCase, _Reason, State = #state{case_started_at = StartedAt, cases = Cases}) ->
     EndedAt = erlang:monotonic_time(),
@@ -63,10 +63,11 @@ report({passed, Suite, TestCase, StartedAt, EndedAt}) ->
     report_test_case(
         color(passed), ?TEST_PASSED_GLYPH, Suite, TestCase, " passed", StartedAt, EndedAt
     );
-report({failed, Suite, TestCase, StartedAt, EndedAt}) ->
+report({failed, Suite, TestCase, Reason, StartedAt, EndedAt}) ->
     report_test_case(
         color(failed), ?TEST_FAILED_GLYPH, Suite, TestCase, " failed", StartedAt, EndedAt
-    );
+    ),
+    report_reason(Reason);
 report({skipped, Suite, TestCase, StartedAt, EndedAt}) ->
     report_test_case(
         color(skipped), ?TEST_SKIPPED_GLYPH, Suite, TestCase, " skipped", StartedAt, EndedAt
@@ -83,6 +84,15 @@ report_test_case(Color, Glyph, Suite, TestCase, Suffix, StartedAt, EndedAt) ->
         format_elapsed_time(EndedAt - StartedAt),
         eol()
     ]).
+
+report_reason(Reason) ->
+    io:put_chars(user, [
+        format_reason(Reason),
+        eol()
+    ]).
+
+format_reason(Reason) ->
+    io_lib:format("~p", [Reason]).
 
 color(Key) -> get_env_color(Key, get_default_color(Key), os:getenv("NO_COLOR")).
 
