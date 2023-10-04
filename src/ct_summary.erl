@@ -158,6 +158,8 @@ format_mfa({M, F, Arity, Props}) when is_integer(Arity) ->
 format_mfa(M, F, A, undefined, undefined) ->
     io_lib:format("      at ~s:~s/~B~n", [M, F, A]);
 format_mfa(M, F, A, File, Line) ->
+    % It turns out that clicking on the location in VS Code's terminal window will take you to the correct file *and*
+    % line number.
     io_lib:format("      at ~s:~s/~B (~s, line ~B)~n", [M, F, A, File, Line]).
 
 color(Key) -> get_env_color(Key, get_default_color(Key), os:getenv("NO_COLOR")).
