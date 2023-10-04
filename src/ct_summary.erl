@@ -63,6 +63,15 @@ report({passed, Suite, TestCase, StartedAt, EndedAt}) ->
     report_test_case(
         color(passed), ?TEST_PASSED_GLYPH, Suite, TestCase, " passed", StartedAt, EndedAt
     );
+report({failed, ct_framework, error_in_suite, {error, Error}, _StartedAt, _EndedAt}) ->
+    io:put_chars(user, [
+        "  ",
+        color(missing),
+        ?TEST_MISSING_GLYPH,
+        " ",
+        io_lib:format("~s", [Error]),
+        eol()
+    ]);
 report({failed, Suite, TestCase, Reason, StartedAt, EndedAt}) ->
     report_test_case(
         color(failed), ?TEST_FAILED_GLYPH, Suite, TestCase, " failed", StartedAt, EndedAt
@@ -98,8 +107,10 @@ color(Key) -> get_env_color(Key, get_default_color(Key), os:getenv("NO_COLOR")).
 
 get_default_color(passed) -> ?COLOR_DARK_GREEN;
 get_default_color(failed) -> ?COLOR_DARK_RED;
+get_default_color(missing) -> ?COLOR_DARK_YELLOW;
 get_default_color(skipped) -> ?COLOR_DARK_YELLOW;
-get_default_color(elapsed) -> ?COLOR_BRIGHT_BLACK.
+get_default_color(elapsed) -> ?COLOR_BRIGHT_BLACK;
+get_default_color(_) -> ?COLOR_BRIGHT_CYAN.
 
 % See https://no-color.org/; if NO_COLOR is present and not empty, colours should be disabled.
 % i.e. if NO_COLOR is absent or empty, colours should be enabled.
