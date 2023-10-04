@@ -36,7 +36,7 @@ pre_init_per_testcase(_Suite, _TestCase, InitData, State) ->
 
 post_init_per_testcase(
     Suite,
-    TestCase,
+    _TestCase,
     _Config,
     Return = {skip, {failed, {_, _, Reason}}},
     State = #state{case_started_at = StartedAt, cases = Cases}
