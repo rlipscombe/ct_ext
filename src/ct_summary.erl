@@ -79,7 +79,7 @@ on_tc_fail(Suite, TestCase, Reason, State = #state{case_started_at = StartedAt, 
     State#state{cases = [{failed, Suite, TestCase, Reason, StartedAt, EndedAt} | Cases]}.
 
 terminate(_State = #state{cases = Cases}) ->
-    lists:foreach(fun report/1, Cases),
+    lists:foreach(fun report/1, lists:reverse(Cases)),
     io:put_chars(user, ["\e[0m", "\r\n"]).
 
 report({passed, Suite, TestCase, StartedAt, EndedAt}) ->
