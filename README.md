@@ -32,7 +32,9 @@ make ct
 
 Run `make ct` in this project.
 
-## Debugging problems with the hook
+## Contributing
+
+### Debugging problems with the hook
 
 1. Common Test outputs the path of the `all_runs.html` file. Open that file.
 2. Click on the most-recent test run.
@@ -46,3 +48,11 @@ If there's nothing there, try the following instead:
 3. Look for the failing suite. Click on that.
 4. Look for the failing test. Click on that.
 5. There's usually a big red banner and a chunk of text. Your error is in there somewhere.
+
+### Using the `ct_debug` hook
+
+```makefile
+CT_HOOKS += and ct_debug
+```
+
+This will write all the callbacks to the console, so you can figure out which functions your hook is missing.
