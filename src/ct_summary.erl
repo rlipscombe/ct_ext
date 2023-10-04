@@ -2,6 +2,7 @@
 -export([
     init/2,
     pre_init_per_testcase/4,
+    post_init_per_testcase/5,
     post_end_per_testcase/5,
     on_tc_skip/4,
     on_tc_fail/4,
@@ -32,6 +33,20 @@ init(_Id, _Opts) ->
 
 pre_init_per_testcase(_Suite, _TestCase, InitData, State) ->
     {InitData, State#state{case_started_at = erlang:monotonic_time()}}.
+
+post_init_per_testcase(
+    Suite,
+    TestCase,
+    _Config,
+    Return = {skip, {failed, {_, _, Reason}}},
+    State = #state{case_started_at = StartedAt, cases = Cases}
+) ->
+    % Called when init_per_testcase fails. Note that we'll report a failure against each affected test (i.e. if
+    % init_per_testcase matches on more than one testcase name).
+    EndedAt = erlang:monotonic_time(),
+    {Return, State#state{cases = [{failed, Suite, init_per_testcase, Reason, StartedAt, EndedAt} | Cases]}};
+post_init_per_testcase(_Suite, _TestCase, _Config, Return, State) ->
+    {Return, State}.
 
 post_end_per_testcase(
     Suite,
@@ -135,7 +150,7 @@ format_reason(_Reason = {Error, Stack}) when is_list(Stack) ->
         format_stacktrace(Stack)
     ];
 format_reason(Reason) ->
-    io_lib:format("~p", [Reason]).
+    io_lib:format("    with ~p", [Reason]).
 
 format_error(Error) ->
     % TODO: Truncate this? Borrow some code from lager?
