@@ -4,6 +4,7 @@
     pre_init_per_testcase/4,
     post_end_per_testcase/5,
     on_tc_skip/4,
+    on_tc_fail/4,
     terminate/1
 ]).
 
@@ -51,9 +52,15 @@ post_end_per_testcase(
     EndedAt = erlang:monotonic_time(),
     {Return, State#state{cases = [{failed, Suite, TestCase, Return, StartedAt, EndedAt} | Cases]}}.
 
-on_tc_skip(Suite, TestCase, _Reason, State = #state{case_started_at = StartedAt, cases = Cases}) ->
+on_tc_skip(Suite, TestCase, Reason, State = #state{case_started_at = StartedAt, cases = Cases}) ->
     EndedAt = erlang:monotonic_time(),
-    State#state{cases = [{skipped, Suite, TestCase, StartedAt, EndedAt} | Cases]}.
+    State#state{cases = [{skipped, Suite, TestCase, Reason, StartedAt, EndedAt} | Cases]}.
+
+%% We use on_tc_fail rather than post_end_per_testcase, because on_tc_fail also gets notified about init_per_suite,
+%% etc., failures.
+on_tc_fail(Suite, TestCase, Reason, State = #state{case_started_at = StartedAt, cases = Cases}) ->
+    EndedAt = erlang:monotonic_time(),
+    State#state{cases = [{failed, Suite, TestCase, Reason, StartedAt, EndedAt} | Cases]}.
 
 terminate(_State = #state{cases = Cases}) ->
     lists:foreach(fun report/1, Cases),
@@ -76,11 +83,30 @@ report({failed, Suite, TestCase, Reason, StartedAt, EndedAt}) ->
     report_test_case(
         color(failed), ?TEST_FAILED_GLYPH, Suite, TestCase, " failed", StartedAt, EndedAt
     ),
-    report_reason(Reason);
-report({skipped, Suite, TestCase, StartedAt, EndedAt}) ->
+    report_reason(Reason),
+    ok;
+report(
+    {skipped, Suite, TestCase, _Reason = {tc_auto_skip, {failed, {Suite, Function, _}}}, StartedAt,
+        EndedAt}
+) ->
+    io:put_chars(user, [
+        "  ",
+        color(skipped),
+        ?TEST_SKIPPED_GLYPH,
+        " ",
+        io_lib:format("~s.~s", [Suite, TestCase]),
+        " skipped",
+        io_lib:format(" (~s.~s failed)", [Suite, Function]),
+        format_elapsed_time(StartedAt, EndedAt),
+        eol()
+    ]),
+    ok;
+report({skipped, Suite, TestCase, Reason, StartedAt, EndedAt}) ->
     report_test_case(
         color(skipped), ?TEST_SKIPPED_GLYPH, Suite, TestCase, " skipped", StartedAt, EndedAt
-    ).
+    ),
+    report_reason(Reason),
+    ok.
 
 report_test_case(Color, Glyph, Suite, TestCase, Suffix, StartedAt, EndedAt) ->
     io:put_chars(user, [
@@ -100,8 +126,36 @@ report_reason(Reason) ->
         eol()
     ]).
 
+format_reason(_Reason = {Error, Stack}) when is_list(Stack) ->
+    [
+        "    with ",
+        format_error(Error),
+        eol(),
+        format_stacktrace(Stack)
+    ];
 format_reason(Reason) ->
     io_lib:format("~p", [Reason]).
+
+format_error(Error) ->
+    % TODO: Truncate this? Borrow some code from lager?
+    io_lib:format("~p", [Error]).
+
+format_stacktrace([]) ->
+    [];
+format_stacktrace([{test_server, _, _, _} | _]) ->
+    [];
+format_stacktrace([MFA | Stack]) ->
+    [format_mfa(MFA), format_stacktrace(Stack)].
+
+format_mfa({M, F, A, Props}) when is_integer(A) ->
+    File = proplists:get_value(file, Props),
+    Line = proplists:get_value(line, Props),
+    format_mfa(M, F, A, File, Line).
+
+format_mfa(M, F, A, undefined, undefined) ->
+    io_lib:format("      at ~s:~s/~B~n", [M, F, A]);
+format_mfa(M, F, A, File, Line) ->
+    io_lib:format("      at ~s:~s/~B (~s, line ~B)~n", [M, F, A, File, Line]).
 
 color(Key) -> get_env_color(Key, get_default_color(Key), os:getenv("NO_COLOR")).
 
