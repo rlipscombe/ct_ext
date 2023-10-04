@@ -43,14 +43,15 @@ post_end_per_testcase(
     EndedAt = erlang:monotonic_time(),
     {Return, State#state{cases = [{passed, Suite, TestCase, StartedAt, EndedAt} | Cases]}};
 post_end_per_testcase(
-    Suite,
-    TestCase,
+    _Suite,
+    _TestCase,
     _Config,
     Return = {error, _},
-    State = #state{case_started_at = StartedAt, cases = Cases}
+    State
 ) ->
-    EndedAt = erlang:monotonic_time(),
-    {Return, State#state{cases = [{failed, Suite, TestCase, Return, StartedAt, EndedAt} | Cases]}}.
+    % No need; on_tc_skip or on_tc_fail will be called, and since we need on_tc_fail for init_per_suite failures, we'd
+    % be better off doing it there.
+    {Return, State}.
 
 on_tc_skip(Suite, TestCase, Reason, State = #state{case_started_at = StartedAt, cases = Cases}) ->
     EndedAt = erlang:monotonic_time(),
