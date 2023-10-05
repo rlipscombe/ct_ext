@@ -102,6 +102,7 @@ report({failed, Suite, TestCase, Reason, StartedAt, EndedAt}) ->
         color(failed), ?TEST_FAILED_GLYPH, Suite, TestCase, " failed", StartedAt, EndedAt
     ),
     report_reason(Reason),
+    io:put_chars(user, [io_lib:format("~p", [Reason]), eol()]),
     ok;
 report(
     {skipped, Suite, TestCase, _Reason = {tc_auto_skip, {failed, {Suite, Function, _}}}, StartedAt,
