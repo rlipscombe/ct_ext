@@ -44,7 +44,9 @@ post_init_per_testcase(
     % Called when init_per_testcase fails. Note that we'll report a failure against each affected test (i.e. if
     % init_per_testcase matches on more than one testcase name).
     EndedAt = erlang:monotonic_time(),
-    {Return, State#state{cases = [{failed, Suite, init_per_testcase, Reason, StartedAt, EndedAt} | Cases]}};
+    {Return, State#state{
+        cases = [{failed, Suite, init_per_testcase, Reason, StartedAt, EndedAt} | Cases]
+    }};
 post_init_per_testcase(_Suite, _TestCase, _Config, Return, State) ->
     {Return, State}.
 
