@@ -10,7 +10,7 @@ color(Key) ->
     get_env_color(Key, get_default_color(Key), is_color_enabled()).
 
 is_color_enabled() ->
-    is_color_enabled("NO_COLOR").
+    is_color_enabled(os:getenv("NO_COLOR")).
 
 is_color_enabled(false) -> true;
 is_color_enabled("") -> true;
