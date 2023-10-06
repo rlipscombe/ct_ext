@@ -9,7 +9,6 @@
     terminate/1
 ]).
 
--include("colors.hrl").
 -include("glyphs.hrl").
 
 -record(state, {
@@ -153,82 +152,12 @@ format_reason(_Reason = {tc_user_skip, Reason}) ->
 format_reason(_Reason = {Error, Stack}) when is_list(Stack) ->
     [
         "    with ",
-        format_error(Error),
+        ct_ext_format:format_error(Error),
         eol(),
-        format_stacktrace(Error, Stack)
+        ct_ext_format:format_stacktrace(Error, Stack)
     ];
 format_reason(Reason) ->
     io_lib:format("    with ~p", [Reason]).
-
-format_error(Error) ->
-    % TODO: Truncate this? Borrow some code from lager?
-    io_lib:format("~p", [Error]).
-
-format_stacktrace(_Error, []) ->
-    [];
-format_stacktrace(_Error, [{test_server, _, _, _} | _]) ->
-    [];
-format_stacktrace(Error, Stack = [Frame = {M, _F, _A, Info} | Frames]) ->
-    [
-        format_stackframe(Frame),
-        format_error_info(M, proplists:get_value(error_info, Info), Error, Stack),
-        format_stacktrace(Error, Frames)
-    ].
-
-format_stackframe({M, F, Args, Props}) when is_list(Args) ->
-    format_stackframe({M, F, length(Args), Props});
-format_stackframe({M, F, Arity, Info}) when is_integer(Arity) ->
-    File = proplists:get_value(file, Info),
-    Line = proplists:get_value(line, Info),
-    ["      at ", format_mfa(M, F, Arity, File, Line)].
-
-format_mfa(M, F, A, undefined, undefined) ->
-    io_lib:format("~s:~s/~B~n", [M, F, A]);
-format_mfa(M, F, A, File, Line) ->
-    % It turns out that clicking on the location in VS Code's terminal window will take you to the correct file *and*
-    % line number.
-    io_lib:format("~s:~s/~B (~s, line ~B)~n", [M, F, A, File, Line]).
-
-format_error_info(_Module, undefined, _Error, _Stack) ->
-    [];
-format_error_info(Module, ErrorInfo, Error, Stack) ->
-    % TODO: This needs formatting better, but it's kinda complex (see erl_error:format_arg_errors).
-    % This'll do for now.
-    case get_extended_error(Module, ErrorInfo, Error, Stack) of
-        ErrorMap when is_map(ErrorMap), map_size(ErrorMap) > 0 ->
-            [
-                io_lib:format("         ~p", [ErrorMap]),
-                eol()
-            ];
-        _ ->
-            []
-    end.
-
-get_extended_error(Module, ErrorInfo, Error, Stack) ->
-    FormatModule = maps:get(module, ErrorInfo, Module),
-    FormatFunction = maps:get(function, ErrorInfo, format_error),
-    try
-        FormatModule:FormatFunction(Error, Stack)
-    catch
-        error:_ ->
-            #{}
-    end.
-
-color(Key) -> get_env_color(Key, get_default_color(Key), os:getenv("NO_COLOR")).
-
-get_default_color(passed) -> ?COLOR_DARK_GREEN;
-get_default_color(failed) -> ?COLOR_DARK_RED;
-get_default_color(missing) -> ?COLOR_DARK_YELLOW;
-get_default_color(skipped) -> ?COLOR_DARK_YELLOW;
-get_default_color(elapsed) -> ?COLOR_BRIGHT_BLACK;
-get_default_color(_) -> ?COLOR_BRIGHT_CYAN.
-
-% See https://no-color.org/; if NO_COLOR is present and not empty, colours should be disabled.
-% i.e. if NO_COLOR is absent or empty, colours should be enabled.
-get_env_color(Key, Default, NoColor) when NoColor =:= false; NoColor =:= "" ->
-    proplists:get_value(Key, application:get_env(?APPLICATION, colors, []), Default);
-get_env_color(_Key, _Default, _NoColor) ->
-    "".
 
 format_elapsed_time(StartedAt, EndedAt) when is_integer(StartedAt), is_integer(EndedAt) ->
     format_elapsed_time(EndedAt - StartedAt);
@@ -243,5 +172,8 @@ format_elapsed_time_ms(ElapsedMs) ->
     % TODO: Human readable timestamps for longer periods.
     io_lib:format("~Bms", [ElapsedMs]).
 
+color(Key) ->
+    ct_ext_color:color(Key).
+
 eol() ->
-    ["\e[0m", "\r\n"].
+    ct_ext_color:eol().
