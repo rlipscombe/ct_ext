@@ -102,7 +102,6 @@ report({failed, Suite, TestCase, Reason, StartedAt, EndedAt}) ->
         color(failed), ?TEST_FAILED_GLYPH, Suite, TestCase, " failed", StartedAt, EndedAt
     ),
     report_reason(Reason),
-    io:put_chars(user, [io_lib:format("~p", [Reason]), eol()]),
     ok;
 report(
     {skipped, Suite, TestCase, _Reason = {tc_auto_skip, {failed, {Suite, Function, _}}}, StartedAt,
@@ -145,12 +144,18 @@ report_reason(Reason) ->
         eol()
     ]).
 
+format_reason(_Reason = {tc_user_skip, Reason}) ->
+    [
+        "    with ",
+        io_lib:format("~p", [Reason]),
+        eol()
+    ];
 format_reason(_Reason = {Error, Stack}) when is_list(Stack) ->
     [
         "    with ",
         format_error(Error),
         eol(),
-        format_stacktrace(Stack)
+        format_stacktrace(Error, Stack)
     ];
 format_reason(Reason) ->
     io_lib:format("    with ~p", [Reason]).
@@ -159,26 +164,55 @@ format_error(Error) ->
     % TODO: Truncate this? Borrow some code from lager?
     io_lib:format("~p", [Error]).
 
-format_stacktrace([]) ->
+format_stacktrace(_Error, []) ->
     [];
-format_stacktrace([{test_server, _, _, _} | _]) ->
+format_stacktrace(_Error, [{test_server, _, _, _} | _]) ->
     [];
-format_stacktrace([MFA | Stack]) ->
-    [format_mfa(MFA), format_stacktrace(Stack)].
+format_stacktrace(Error, Stack = [Frame = {M, _F, _A, Info} | Frames]) ->
+    [
+        format_stackframe(Frame),
+        format_error_info(M, proplists:get_value(error_info, Info), Error, Stack),
+        format_stacktrace(Error, Frames)
+    ].
 
-format_mfa({M, F, Args, Props}) when is_list(Args) ->
-    format_mfa({M, F, length(Args), Props});
-format_mfa({M, F, Arity, Props}) when is_integer(Arity) ->
-    File = proplists:get_value(file, Props),
-    Line = proplists:get_value(line, Props),
-    format_mfa(M, F, Arity, File, Line).
+format_stackframe({M, F, Args, Props}) when is_list(Args) ->
+    format_stackframe({M, F, length(Args), Props});
+format_stackframe({M, F, Arity, Info}) when is_integer(Arity) ->
+    File = proplists:get_value(file, Info),
+    Line = proplists:get_value(line, Info),
+    ["      at ", format_mfa(M, F, Arity, File, Line)].
 
 format_mfa(M, F, A, undefined, undefined) ->
-    io_lib:format("      at ~s:~s/~B~n", [M, F, A]);
+    io_lib:format("~s:~s/~B~n", [M, F, A]);
 format_mfa(M, F, A, File, Line) ->
     % It turns out that clicking on the location in VS Code's terminal window will take you to the correct file *and*
     % line number.
-    io_lib:format("      at ~s:~s/~B (~s, line ~B)~n", [M, F, A, File, Line]).
+    io_lib:format("~s:~s/~B (~s, line ~B)~n", [M, F, A, File, Line]).
+
+format_error_info(_Module, undefined, _Error, _Stack) ->
+    [];
+format_error_info(Module, ErrorInfo, Error, Stack) ->
+    % TODO: This needs formatting better, but it's kinda complex (see erl_error:format_arg_errors).
+    % This'll do for now.
+    case get_extended_error(Module, ErrorInfo, Error, Stack) of
+        ErrorMap when is_map(ErrorMap), map_size(ErrorMap) > 0 ->
+            [
+                io_lib:format("         ~p", [ErrorMap]),
+                eol()
+            ];
+        _ ->
+            []
+    end.
+
+get_extended_error(Module, ErrorInfo, Error, Stack) ->
+    FormatModule = maps:get(module, ErrorInfo, Module),
+    FormatFunction = maps:get(function, ErrorInfo, format_error),
+    try
+        FormatModule:FormatFunction(Error, Stack)
+    catch
+        error:_ ->
+            #{}
+    end.
 
 color(Key) -> get_env_color(Key, get_default_color(Key), os:getenv("NO_COLOR")).
 
