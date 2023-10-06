@@ -1,4 +1,4 @@
--module(ct_debug).
+-module(ct_ext_debug).
 -export([
     id/1,
     init/2,

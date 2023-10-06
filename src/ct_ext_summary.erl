@@ -1,4 +1,4 @@
--module(ct_summary).
+-module(ct_ext_summary).
 -export([
     init/2,
     pre_init_per_testcase/4,
@@ -19,7 +19,7 @@
     cases = []
 }).
 
--define(APPLICATION, ct_report).
+-define(APPLICATION, ct_ext).
 
 init(_Id, _Opts) ->
     % Load application environment.
@@ -192,7 +192,7 @@ get_default_color(_) -> ?COLOR_BRIGHT_CYAN.
 % See https://no-color.org/; if NO_COLOR is present and not empty, colours should be disabled.
 % i.e. if NO_COLOR is absent or empty, colours should be enabled.
 get_env_color(Key, Default, NoColor) when NoColor =:= false; NoColor =:= "" ->
-    proplists:get_value(Key, application:get_env(ct_report, colors, []), Default);
+    proplists:get_value(Key, application:get_env(?APPLICATION, colors, []), Default);
 get_env_color(_Key, _Default, _NoColor) ->
     "".
 

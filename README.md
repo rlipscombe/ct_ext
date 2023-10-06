@@ -1,12 +1,12 @@
-# ct_report
+# ct_ext
 
-Pretty progress reporting and summary for Erlang's Common Test.
+Various extensions for Erlang's Common Test.
 
 This package provides the following hook:
 
-- `ct_summary` -- print a list of the succeeded and failed tests after the run has completed.
+- `ct_ext_summary` -- pretty print a list of the succeeded and failed tests after the run has completed.
 
-I plan to add other hooks in future.
+I plan to add other extensions in future.
 
 ## Usage
 
@@ -15,12 +15,12 @@ This project only supports `erlang.mk` or directly using `ct_run`, since I'm not
 ### Using `erlang.mk`
 
 ```makefile
-TEST_DEPS += ct_report
+TEST_DEPS += ct_ext
 
-dep_ct_report = git https://github.com/rlipscombe/ct_report
+dep_ct_ext = git https://github.com/rlipscombe/ct_ext
 
 # -ct_hooks should come near the beginning.
-CT_HOOKS = ct_summary
+CT_HOOKS = ct_ext_summary
 CT_OPTS = -ct_hooks $(CT_HOOKS) $(CT_OPTS)
 ```
 
@@ -49,10 +49,10 @@ If there's nothing there, try the following instead:
 4. Look for the failing test. Click on that.
 5. There's usually a big red banner and a chunk of text. Your error is in there somewhere.
 
-### Using the `ct_debug` hook
+### Using the `ct_ext_debug` hook
 
 ```makefile
-CT_HOOKS += and ct_debug
+CT_HOOKS += and ct_ext_debug
 ```
 
 This will write all the callbacks to the console, so you can figure out which functions your hook is missing.
