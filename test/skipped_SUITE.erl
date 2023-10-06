@@ -13,4 +13,3 @@ init_per_testcase(_TestCase, _Config) ->
 not_run(_Config) -> exit(unexpected).
 
 % TODO: all lists a non-existent test.
-% TODO: init fails, rather than skips.
