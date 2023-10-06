@@ -1,19 +1,17 @@
 -module(failing_SUITE).
 -export([
     all/0,
-    assert_false/1,
+    throw_error/1,
     call_stack/1
 ]).
 
--include_lib("eunit/include/eunit.hrl").
-
 all() ->
     [
-        assert_false,
+        throw_error,
         call_stack
     ].
 
-assert_false(_Config) -> ?assert(false).
+throw_error(_Config) -> error(computer_says_no).
 
 call_stack(_Config) -> recursive_call(5).
 
