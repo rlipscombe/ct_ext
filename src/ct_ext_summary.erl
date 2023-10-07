@@ -125,6 +125,17 @@ report({skipped, Suite, TestCase, Reason, StartedAt, EndedAt}) ->
     report_reason(Reason),
     ok.
 
+report_test_case(Color, Glyph, Suite, {TestCase, Group}, Suffix, StartedAt, EndedAt) ->
+    io:put_chars(user, [
+        "  ",
+        Color,
+        Glyph,
+        " ",
+        io_lib:format("~s.~s (in group ~s)", [Suite, TestCase, Group]),
+        Suffix,
+        format_elapsed_time(StartedAt, EndedAt),
+        eol()
+    ]);
 report_test_case(Color, Glyph, Suite, TestCase, Suffix, StartedAt, EndedAt) ->
     io:put_chars(user, [
         "  ",
