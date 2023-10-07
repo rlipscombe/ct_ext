@@ -2,7 +2,8 @@
 -export([
     all/0,
     add_atoms/1,
-    parse_hello/1
+    parse_hello/1,
+    div_by_zero/1
 ]).
 
 %% We should format the error_info properly.
@@ -10,7 +11,8 @@
 all() ->
     [
         add_atoms,
-        parse_hello
+        parse_hello,
+        div_by_zero
     ].
 
 add_atoms(_Config) ->
@@ -29,3 +31,6 @@ parse_hello(_Config) ->
     %      in call from erl_parse:yeccpars1/5 (/Users/rogerlipscombe/.kerl/builds/OTP-25.3.2.5/otp_src_git/bootstrap/lib/parsetools/include/yeccpre.hrl, line 83)
     %      in call from erl_parse:yeccpars0/5 (/Users/rogerlipscombe/.kerl/builds/OTP-25.3.2.5/otp_src_git/bootstrap/lib/parsetools/include/yeccpre.hrl, line 57)
     erl_parse:parse("hello.").
+
+div_by_zero(_Config) ->
+    _ = 9 div 0.

@@ -20,7 +20,17 @@ format_stacktrace(Error, Stack = [Frame = {M, _F, _A, Info} | Frames]) ->
     ].
 
 format_stackframe({M, F, Args, Props}) when is_list(Args) ->
-    format_stackframe({M, F, length(Args), Props});
+    [
+        format_stackframe({M, F, length(Args), Props}),
+        "      called as ",
+        io_lib:format(
+            "~s:~s(",
+            [M, F]
+        ),
+        lists:join(", ", lists:map(fun(Arg) -> io_lib:format("~p", [Arg]) end, Args)),
+        ")",
+        eol()
+    ];
 format_stackframe({M, F, Arity, Info}) when is_integer(Arity) ->
     File = proplists:get_value(file, Info),
     Line = proplists:get_value(line, Info),
