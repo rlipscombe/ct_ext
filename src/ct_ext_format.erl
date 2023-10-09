@@ -21,7 +21,9 @@ format_stacktrace(Error, Stack = [Frame = {M, _F, _A, Info} | Frames]) ->
 
 format_stackframe({M, F, Args, Props}) when is_list(Args) ->
     [
+        % Output the usual foo:bar/2.
         format_stackframe({M, F, length(Args), Props}),
+        % If we've got the actual args, output that as well.
         "      called as ",
         io_lib:format(
             "~s:~s(",
