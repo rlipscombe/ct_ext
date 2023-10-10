@@ -2,3 +2,6 @@
 ebin/
 .erlang.mk/
 logs/
+erl_crash.dump
+makefile.bak
+deps/
