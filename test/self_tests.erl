@@ -5,14 +5,24 @@
 -include_lib("eunit/include/eunit.hrl").
 
 a_test() ->
-    ok = meck:new(ct_ext_io, [no_link]),
-    meck:expect(ct_ext_io, put_chars, fun(_, _) -> ok end),
-    {_Ok, _Failed, {_UserSkipped, _AutoSkipped}} =
+    % ct:run_test runs in a separate node, so we have to jump through some hoops to capture the output:
+    {ok, _} = net_kernel:start([ct_ext_io, shortnames]),
+    true = register(ct_ext_io, self()),
+
+    _ =
         ct:run_test([
             {dir, "test"},
             {suite, passing_SUITE},
             {logdir, "logs"}
         ]),
-    meck:wait(ct_ext_io, put_chars, ['_', '_'], 2_500),
-    % ?assertNotEqual([], meck:history(ct_ext_io)),
+
+    moo = flush([]),
     ok.
+
+flush(Acc) ->
+    receive
+        M ->
+            flush([M | Acc])
+    after 1_500 ->
+        lists:reverse(Acc)
+    end.
