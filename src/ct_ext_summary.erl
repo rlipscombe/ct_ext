@@ -11,6 +11,8 @@
 
 -include("glyphs.hrl").
 
+-define(put_chars(X), ct_ext_io:put_chars(X)).
+
 -record(state, {
     % erlang:monotonic_time, native units.
     case_started_at,
@@ -81,14 +83,14 @@ on_tc_fail(Suite, TestCase, Reason, State = #state{case_started_at = StartedAt, 
 
 terminate(_State = #state{cases = Cases}) ->
     lists:foreach(fun report/1, lists:reverse(Cases)),
-    io:put_chars(user, ["\e[0m", "\r\n"]).
+    ?put_chars(["\e[0m", "\r\n"]).
 
 report({passed, Suite, TestCase, StartedAt, EndedAt}) ->
     report_test_case(
         color(passed), ?TEST_PASSED_GLYPH, Suite, TestCase, " passed", StartedAt, EndedAt
     );
 report({failed, ct_framework, error_in_suite, {error, Error}, _StartedAt, _EndedAt}) ->
-    io:put_chars(user, [
+    ?put_chars([
         "  ",
         color(missing),
         ?TEST_MISSING_GLYPH,
@@ -106,7 +108,7 @@ report(
     {skipped, Suite, TestCase, _Reason = {tc_auto_skip, {failed, {Suite, Function, _}}}, StartedAt,
         EndedAt}
 ) ->
-    io:put_chars(user, [
+    ?put_chars([
         "  ",
         color(skipped),
         ?TEST_SKIPPED_GLYPH,
@@ -126,7 +128,7 @@ report({skipped, Suite, TestCase, Reason, StartedAt, EndedAt}) ->
     ok.
 
 report_test_case(Color, Glyph, Suite, {TestCase, Group}, Suffix, StartedAt, EndedAt) ->
-    io:put_chars(user, [
+    ?put_chars([
         "  ",
         Color,
         Glyph,
@@ -137,7 +139,7 @@ report_test_case(Color, Glyph, Suite, {TestCase, Group}, Suffix, StartedAt, Ende
         eol()
     ]);
 report_test_case(Color, Glyph, Suite, TestCase, Suffix, StartedAt, EndedAt) ->
-    io:put_chars(user, [
+    ?put_chars([
         "  ",
         Color,
         Glyph,
@@ -149,7 +151,7 @@ report_test_case(Color, Glyph, Suite, TestCase, Suffix, StartedAt, EndedAt) ->
     ]).
 
 report_reason(Reason) ->
-    io:put_chars(user, [
+    ?put_chars([
         format_reason(Reason),
         eol()
     ]).

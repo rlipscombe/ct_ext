@@ -6,22 +6,15 @@ passing_test() ->
     % To get around this, we use another hook, which gets loaded into that node first, and we can use that to subvert
     % the output.
 
-    ?assertEqual({1, 0, {0, 0}},
+    ?assertEqual(
+        {1, 0, {0, 0}},
         ct:run_test(
-            [{dir, "test"},
-            {suite, "passing_SUITE"},
-        {logdir, "logs"}])),
+            [
+                {dir, "test"},
+                {suite, "passing_SUITE"},
+                {logdir, "logs"},
+                {ct_hooks, [ct_ext_test_hook, ct_ext_debug, ct_ext_summary]}
+            ]
+        )
+    ),
     ok.
-    % % Ideally, I'd like to just capture the output from the hook, and run it with actual suites.
-    % % Unfortunately, that's really difficult: the CT tests run in a separate node
-    % Hook = ct_ext_summary,
-    % Opts = [],
-
-    % Id = Hook:id(Opts),
-    % {ok, State} = Hook:init(Id, Opts),
-
-    % % TODO: post_groups
-    % % TODO: post_all
-
-    % {Config, State2} = Hook:pre_init_per_suite(SuiteName, InitData, State),
-    % ok.
