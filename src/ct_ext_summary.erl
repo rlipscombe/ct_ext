@@ -62,6 +62,16 @@ post_end_per_testcase(
     _Suite,
     _TestCase,
     _Config,
+    Return = {'EXIT', _},
+    State
+) ->
+    % No need; on_tc_skip or on_tc_fail will be called, and since we need on_tc_fail for init_per_suite failures, we'd
+    % be better off doing it there.
+    {Return, State};
+post_end_per_testcase(
+    _Suite,
+    _TestCase,
+    _Config,
     Return = {error, _},
     State
 ) ->
