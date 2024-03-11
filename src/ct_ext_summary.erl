@@ -58,6 +58,9 @@ post_end_per_testcase(
 ) ->
     EndedAt = erlang:monotonic_time(),
     {Return, State#state{cases = [{passed, Suite, TestCase, StartedAt, EndedAt} | Cases]}};
+post_end_per_testcase(Suite, TestCase, _Config, Return = {failed, {Suite, end_per_testcase, {'EXIT', Reason}}}, State = #state{case_started_at = StartedAt, cases = Cases}) ->
+    EndedAt = erlang:monotonic_time(),
+    {Return, State#state{cases = [{failed, Suite, {end_per_testcase, TestCase}, Reason, StartedAt, EndedAt} | Cases]}};
 post_end_per_testcase(
     _Suite,
     _TestCase,
@@ -135,6 +138,17 @@ report({skipped, Suite, TestCase, Reason, StartedAt, EndedAt}) ->
     report_reason(Reason),
     ok.
 
+report_test_case(Color, Glyph, Suite, {F = end_per_testcase, TestCase}, Suffix, StartedAt, EndedAt) ->
+    io:put_chars(user, [
+        "  ",
+        Color,
+        Glyph,
+        " ",
+        io_lib:format("~s.~s (for testcase ~s)", [Suite, F, TestCase]),
+        Suffix,
+        format_elapsed_time(StartedAt, EndedAt),
+        eol()
+    ]);
 report_test_case(Color, Glyph, Suite, {TestCase, Group}, Suffix, StartedAt, EndedAt) ->
     io:put_chars(user, [
         "  ",
