@@ -30,22 +30,33 @@ init(_Id, _Opts) ->
     State = #state{},
     {ok, State}.
 
+add_pass(Suite, TestCase, State = #state{case_started_at = StartedAt, cases = Cases}) ->
+    EndedAt = erlang:monotonic_time(),
+    State#state{cases = [{passed, Suite, TestCase, StartedAt, EndedAt} | Cases]}.
+
+add_failure(Suite, TestCase, Reason, State = #state{case_started_at = StartedAt, cases = Cases}) ->
+    EndedAt = erlang:monotonic_time(),
+    State#state{
+        cases = [{failed, Suite, TestCase, Reason, StartedAt, EndedAt} | Cases]
+    }.
+
+add_skipped(Suite, TestCase, Reason, State = #state{case_started_at = StartedAt, cases = Cases}) ->
+    EndedAt = erlang:monotonic_time(),
+    State#state{cases = [{skipped, Suite, TestCase, Reason, StartedAt, EndedAt} | Cases]}.
+
 pre_init_per_testcase(_Suite, _TestCase, InitData, State) ->
     {InitData, State#state{case_started_at = erlang:monotonic_time()}}.
 
 post_init_per_testcase(
     Suite,
-    _TestCase,
+    TestCase,
     _Config,
     Return = {skip, {failed, {_, _, Reason}}},
-    State = #state{case_started_at = StartedAt, cases = Cases}
+    State
 ) ->
     % Called when init_per_testcase fails. Note that we'll report a failure against each affected test (i.e. if
     % init_per_testcase matches on more than one testcase name).
-    EndedAt = erlang:monotonic_time(),
-    {Return, State#state{
-        cases = [{failed, Suite, init_per_testcase, Reason, StartedAt, EndedAt} | Cases]
-    }};
+    {Return, add_failure(Suite, {init_per_testcase, TestCase}, Reason, State)};
 post_init_per_testcase(_Suite, _TestCase, _Config, Return, State) ->
     {Return, State}.
 
@@ -54,13 +65,17 @@ post_end_per_testcase(
     TestCase,
     _Config,
     Return = ok,
-    State = #state{case_started_at = StartedAt, cases = Cases}
+    State
 ) ->
-    EndedAt = erlang:monotonic_time(),
-    {Return, State#state{cases = [{passed, Suite, TestCase, StartedAt, EndedAt} | Cases]}};
-post_end_per_testcase(Suite, TestCase, _Config, Return = {failed, {Suite, end_per_testcase, {'EXIT', Reason}}}, State = #state{case_started_at = StartedAt, cases = Cases}) ->
-    EndedAt = erlang:monotonic_time(),
-    {Return, State#state{cases = [{failed, Suite, {end_per_testcase, TestCase}, Reason, StartedAt, EndedAt} | Cases]}};
+    {Return, add_pass(Suite, TestCase, State)};
+post_end_per_testcase(
+    Suite,
+    TestCase,
+    _Config,
+    Return = {failed, {Suite, end_per_testcase, {'EXIT', Reason}}},
+    State
+) ->
+    {Return, add_failure(Suite, TestCase, Reason, State)};
 post_end_per_testcase(
     _Suite,
     _TestCase,
@@ -82,15 +97,13 @@ post_end_per_testcase(
     % be better off doing it there.
     {Return, State}.
 
-on_tc_skip(Suite, TestCase, Reason, State = #state{case_started_at = StartedAt, cases = Cases}) ->
-    EndedAt = erlang:monotonic_time(),
-    State#state{cases = [{skipped, Suite, TestCase, Reason, StartedAt, EndedAt} | Cases]}.
+on_tc_skip(Suite, TestCase, Reason, State) ->
+    add_skipped(Suite, TestCase, Reason, State).
 
 %% We use on_tc_fail rather than post_end_per_testcase, because on_tc_fail also gets notified about init_per_suite,
 %% etc., failures.
-on_tc_fail(Suite, TestCase, Reason, State = #state{case_started_at = StartedAt, cases = Cases}) ->
-    EndedAt = erlang:monotonic_time(),
-    State#state{cases = [{failed, Suite, TestCase, Reason, StartedAt, EndedAt} | Cases]}.
+on_tc_fail(Suite, TestCase, Reason, State) ->
+    add_failure(Suite, TestCase, Reason, State).
 
 terminate(_State = #state{cases = Cases}) ->
     lists:foreach(fun report/1, lists:reverse(Cases)),
