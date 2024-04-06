@@ -5,6 +5,7 @@ Various extensions for Erlang's Common Test.
 This package provides the following hook:
 
 - `ct_ext_summary` -- pretty print a list of the succeeded and failed tests after the run has completed.
+- `ct_ext_ensure_started` -- automatically start an application before the test run begins.
 
 I plan to add other extensions in future.
 
@@ -21,6 +22,7 @@ dep_ct_ext = git https://github.com/rlipscombe/ct_ext
 
 # -ct_hooks should come near the beginning.
 CT_HOOKS = ct_ext_summary
+CT_HOOKS += and ct_ext_ensure_started $(APPLICATION)
 CT_OPTS = -ct_hooks $(CT_HOOKS) $(CT_OPTS)
 ```
 
