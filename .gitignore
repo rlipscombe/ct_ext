@@ -2,3 +2,4 @@
 ebin/
 .erlang.mk/
 logs/
+deps/
