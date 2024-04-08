@@ -20,9 +20,11 @@ TEST_DEPS += ct_ext
 
 dep_ct_ext = git https://github.com/rlipscombe/ct_ext
 
-# -ct_hooks should come near the beginning.
+# Hooks take arguments directly after the name. Multiple hooks are joined with 'and'.
 CT_HOOKS = ct_ext_summary
 CT_HOOKS += and ct_ext_ensure_started $(APPLICATION)
+
+# -ct_hooks should come near the beginning of CT_OPTS.
 CT_OPTS = -ct_hooks $(CT_HOOKS) $(CT_OPTS)
 ```
 
