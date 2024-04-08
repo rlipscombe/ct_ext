@@ -36,14 +36,14 @@ format_stackframe({M, F, Args, Props}) when is_list(Args) ->
 format_stackframe({M, F, Arity, Info}) when is_integer(Arity) ->
     File = proplists:get_value(file, Info),
     Line = proplists:get_value(line, Info),
-    ["      at ", format_mfa(M, F, Arity, File, Line)].
+    ["      at ", format_mfa(M, F, Arity, File, Line), eol()].
 
 format_mfa(M, F, A, undefined, undefined) ->
-    io_lib:format("~s:~s/~B~n", [M, F, A]);
+    io_lib:format("~s:~s/~B", [M, F, A]);
 format_mfa(M, F, A, File, Line) ->
     % It turns out that clicking on the location in VS Code's terminal window will take you to the correct file *and*
     % line number.
-    io_lib:format("~s:~s/~B (~s, line ~B)~n", [M, F, A, File, Line]).
+    io_lib:format("~s:~s/~B (~s, line ~B)", [M, F, A, File, Line]).
 
 format_error_info(_Module, undefined, _Error, _Stack) ->
     [];
