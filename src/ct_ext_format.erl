@@ -10,7 +10,7 @@ format_error(Error) ->
 
 format_stacktrace(_Error, []) ->
     [];
-format_stacktrace(_Error, [{test_server, _, _, _} | _]) ->
+format_stacktrace(_Error, [{Mod, _, _, _} | _]) when Mod == test_server; Mod == eunit_test ->
     [];
 format_stacktrace(Error, Stack = [Frame = {M, _F, _A, Info} | Frames]) ->
     [

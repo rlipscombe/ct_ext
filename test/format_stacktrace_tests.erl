@@ -71,12 +71,6 @@ longer() ->
             "      at eventually:assert_error/2 (/path/to/eventually/src/eventually.erl, line 156)\n"
             "      called as eventually:assert_error({probe,always_fail,'#Fun<eventually.7.121276098>',false}, {matcher,never_match,'#Fun<description_tests.2.56923557>'})\r\n"
             "      at description_tests:both_description_test/0 (/path/to/eventually/test/description_tests.erl, line 12)\n"
-            "      at eunit_test:-mf_wrapper/2-fun-0-/2 (eunit_test.erl, line 273)\n"
-            "      at eunit_test:run_testfun/1 (eunit_test.erl, line 71)\n"
-            "      at eunit_proc:run_test/1 (eunit_proc.erl, line 531)\n"
-            "      at eunit_proc:with_timeout/3 (eunit_proc.erl, line 356)\n"
-            "      at eunit_proc:handle_test/2 (eunit_proc.erl, line 514)\n"
-            "      at eunit_proc:tests_inorder/3 (eunit_proc.erl, line 456)\n"
         >>,
     ?assertEqual(Expected, iolist_to_binary(ct_ext_format:format_stacktrace(Error, Stack))),
     ok.
@@ -88,13 +82,7 @@ error_info() ->
         "      called as maps:map(not_a_fun, not_a_map)\r\n"
         "         #{1 => <<\"not a fun that takes two arguments\">>,\n"
         "           2 => <<\"not a map or an iterator\">>}\r\n"
-        "      at format_stacktrace_tests:error_info/0 (test/format_stacktrace_tests.erl, line 85)\n"
-        "      at eunit_test:run_testfun/1 (eunit_test.erl, line 71)\n"
-        "      at eunit_proc:run_test/1 (eunit_proc.erl, line 531)\n"
-        "      at eunit_proc:with_timeout/3 (eunit_proc.erl, line 356)\n"
-        "      at eunit_proc:handle_test/2 (eunit_proc.erl, line 514)\n"
-        "      at eunit_proc:tests_inorder/3 (eunit_proc.erl, line 456)\n"
-        "      at eunit_proc:with_timeout/3 (eunit_proc.erl, line 346)\n"
+        "      at format_stacktrace_tests:error_info/0 (test/format_stacktrace_tests.erl, line 79)\n"
     >>,
     ?assertEqual(Expected, iolist_to_binary(ct_ext_format:format_stacktrace(Error, Stack))),
     ok.
