@@ -1,7 +1,8 @@
 -module(ct_ext_format).
 -export([
     format_error/1,
-    format_stacktrace/2
+    format_stacktrace/2,
+    format_exception/1
 ]).
 
 format_error(Error) ->
@@ -17,6 +18,13 @@ format_stacktrace(Error, Stack = [Frame = {M, _F, _A, Info} | Frames]) ->
         format_stackframe(Frame),
         format_error_info(M, proplists:get_value(error_info, Info), Error, Stack),
         format_stacktrace(Error, Frames)
+    ].
+
+format_exception({Error, Frame}) when is_tuple(Frame) ->
+    [
+        ct_ext_format:format_error(Error),
+        eol(),
+        ct_ext_format:format_stacktrace(Error, [Frame])
     ].
 
 format_stackframe({M, F, Args, Props}) when is_list(Args) ->

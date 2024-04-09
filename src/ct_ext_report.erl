@@ -93,6 +93,11 @@ format_reason(_Reason = {tc_user_skip, Reason}) ->
         io_lib:format("~p", [Reason]),
         eol()
     ];
+format_reason(_Reason = {'EXIT', Exception}) ->
+    [
+        "    exited with ",
+        ct_ext_format:format_exception(Exception)
+    ];
 format_reason(_Reason = {Error, Stack}) when is_list(Stack) ->
     [
         "    with ",
