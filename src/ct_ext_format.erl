@@ -19,6 +19,19 @@ format_stacktrace(Error, Stack = [Frame = {M, _F, _A, Info} | Frames]) ->
         format_stacktrace(Error, Frames)
     ].
 
+format_exception({Error, Frame}) when is_tuple(Frame) ->
+    [
+        format_error(Error),
+        eol(),
+        format_stacktrace(Error, [Frame])
+    ];
+format_exception(Error) ->
+    [
+        format_error(Error),
+        eol(),
+        "      with no stack trace available"
+    ].
+
 format_stackframe({M, F, Args, Props}) when is_list(Args) ->
     [
         % Output the usual foo:bar/2.
