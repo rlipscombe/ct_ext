@@ -1,6 +1,7 @@
 -module(ct_ext_color).
 -export([
     color/1,
+    threshold/3,
     reset/0,
     eol/0
 ]).
@@ -30,6 +31,20 @@ get_env_color(Key, Default, true) ->
     proplists:get_value(Key, application:get_env(?APPLICATION, colors, []), Default);
 get_env_color(_Key, _Default, false) ->
     "".
+
+threshold(Value, Thresholds = [{_, _} | _], Default) ->
+    threshold(Value, Thresholds, Default, is_color_enabled()).
+
+threshold(_Value, _Thresholds, _Default, false) ->
+    "";
+threshold(Value, Thresholds, Default, true) ->
+    % Thresholds is expected to be sorted in reverse order.
+    case lists:search(fun({Threshold, _}) -> Value >= Threshold end, Thresholds) of
+        {value, {_, Color}} ->
+            Color;
+        _ ->
+            Default
+    end.
 
 reset() ->
     reset(is_color_enabled()).

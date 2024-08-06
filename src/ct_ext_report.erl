@@ -1,6 +1,8 @@
 -module(ct_ext_report).
 -export([report/1]).
 
+-define(APPLICATION, ct_ext).
+
 -include("glyphs.hrl").
 -include("colors.hrl").
 
@@ -122,9 +124,20 @@ format_elapsed_time_ms(ElapsedMs) ->
     % TODO: Human readable timestamps for longer periods.
     io_lib:format("~Bms", [ElapsedMs]).
 
-elapsed_color(ElapsedMs) when ElapsedMs > 3000 -> ?COLOR_DARK_RED;
-elapsed_color(ElapsedMs) when ElapsedMs > 1000 -> ?COLOR_DARK_YELLOW;
-elapsed_color(_ElapsedMs) -> ?COLOR_BRIGHT_BLACK.
+elapsed_color(ElapsedMs) ->
+    Thresholds = application:get_env(
+        ?APPLICATION, elapsed_thresholds, default_elapsed_thresholds()
+    ),
+    ct_ext_color:threshold(ElapsedMs, Thresholds, ?COLOR_BRIGHT_BLACK).
+
+default_elapsed_thresholds() ->
+    % Must be in reverse order by elapsed time.
+    [
+        {5000, ?COLOR_DARK_RED},
+        {2000, ?COLOR_DARK_YELLOW},
+        {1000, ?COLOR_DARK_WHITE},
+        {0, ?COLOR_BRIGHT_BLACK}
+    ].
 
 color(Key) ->
     ct_ext_color:color(Key).
