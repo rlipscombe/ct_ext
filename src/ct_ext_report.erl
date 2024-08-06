@@ -2,6 +2,7 @@
 -export([report/1]).
 
 -include("glyphs.hrl").
+-include("colors.hrl").
 
 report({passed, Suite, TestCase, StartedAt, EndedAt}) ->
     report_test_case(
@@ -115,11 +116,15 @@ format_elapsed_time(_StartedAt, _EndedAt) ->
 
 format_elapsed_time(Elapsed) ->
     ElapsedMs = erlang:convert_time_unit(Elapsed, native, millisecond),
-    [color(elapsed), " (", format_elapsed_time_ms(ElapsedMs), ")"].
+    [elapsed_color(ElapsedMs), " (", format_elapsed_time_ms(ElapsedMs), ")", ct_ext_color:reset()].
 
 format_elapsed_time_ms(ElapsedMs) ->
     % TODO: Human readable timestamps for longer periods.
     io_lib:format("~Bms", [ElapsedMs]).
+
+elapsed_color(ElapsedMs) when ElapsedMs > 3000 -> ?COLOR_DARK_RED;
+elapsed_color(ElapsedMs) when ElapsedMs > 1000 -> ?COLOR_DARK_YELLOW;
+elapsed_color(_ElapsedMs) -> ?COLOR_BRIGHT_BLACK.
 
 color(Key) ->
     ct_ext_color:color(Key).
