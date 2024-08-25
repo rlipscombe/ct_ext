@@ -1,0 +1,2 @@
+-define(RUN_TEST(Suite, Case), ?RUN_TEST(Suite, Case, [ct_ext_summary])).
+-define(RUN_TEST(Suite, Case, Hooks), ct_ext_test:run_test(Suite, Case, Hooks)).
