@@ -3,3 +3,4 @@ ebin/
 .erlang.mk/
 logs/
 deps/
+erl_crash.dump

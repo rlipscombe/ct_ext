@@ -1,7 +1,9 @@
 PROJECT = ct_ext
 
-CT_HOOKS = ct_ext_summary
-CT_OPTS = -ct_hooks $(CT_HOOKS) -erl_args -config test/sys.config
+# DON'T! Justify it later.
+#CT_HOOKS = ct_ext_summary
+#CT_OPTS = -ct_hooks $(CT_HOOKS)
+#CT_OPTS += -erl_args -config test/sys.config
 
 TEST_DEPS = \
 	unite
