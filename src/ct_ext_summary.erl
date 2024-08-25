@@ -105,4 +105,4 @@ on_tc_fail(Suite, TestCase, Reason, State) ->
 
 terminate(_State = #state{cases = Cases}) ->
     lists:foreach(fun ct_ext_report:report/1, lists:reverse(Cases)),
-    io:put_chars(user, ["\e[0m", "\r\n"]).
+    io:put_chars(user, [ct_ext_color:reset(), "\r\n"]).
