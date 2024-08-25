@@ -18,7 +18,6 @@ run_test(Suite, Case, Hooks) ->
 
         {dir, Dir},
         {suite, [Suite]},
-        % TODO: This bit varies.
         {testcase, [Case]}
     ],
     ct:capture_start(),
