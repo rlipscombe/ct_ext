@@ -116,6 +116,7 @@ report_results(_State = #state{cases = Cases}) ->
 
 report_counts(State) ->
     {PassedCount, SkippedCount, FailedCount} = aggregate_counts(State),
+    TotalCount = PassedCount + SkippedCount + FailedCount,
     io:put_chars(user, [
         "  ",
         format_count(PassedCount, passed, ?TEST_PASSED_GLYPH, "passed"),
@@ -123,7 +124,8 @@ report_counts(State) ->
         format_count(SkippedCount, skipped, ?TEST_SKIPPED_GLYPH, "skipped"),
         ", ",
         format_count(FailedCount, failed, ?TEST_FAILED_GLYPH, "failed"),
-        " cases",
+        " of ",
+        io_lib:format("~B ~s", [TotalCount, pluralize(TotalCount, "case", "cases")]),
         ct_ext_color:eol()
     ]).
 
@@ -139,3 +141,6 @@ aggregate_counts({failed, _, _, _, _, _}, {Passed, Skipped, Failed}) ->
 
 format_count(Count, Key, Glyph, Class) ->
     [ct_ext_color:color(Key), Glyph, " ", io_lib:format("~B ~s", [Count, Class]), ct_ext_color:reset()].
+
+pluralize(Count, Singular, _Plural) when Count == 1 -> Singular;
+pluralize(_Count, _Singular, Plural) -> Plural.
