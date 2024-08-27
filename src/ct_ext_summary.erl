@@ -140,7 +140,13 @@ aggregate_counts({failed, _, _, _, _, _}, {Passed, Skipped, Failed}) ->
     {Passed, Skipped, Failed + 1}.
 
 format_count(Count, Key, Glyph, Class) ->
-    [ct_ext_color:color(Key), Glyph, " ", io_lib:format("~B ~s", [Count, Class]), ct_ext_color:reset()].
+    [
+        ct_ext_color:color(Key),
+        Glyph,
+        " ",
+        io_lib:format("~B ~s", [Count, Class]),
+        ct_ext_color:reset()
+    ].
 
 pluralize(Count, Singular, _Plural) when Count == 1 -> Singular;
 pluralize(_Count, _Singular, Plural) -> Plural.
