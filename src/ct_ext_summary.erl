@@ -139,7 +139,15 @@ aggregate_counts({skipped, _, _, _, _, _}, {Passed, Skipped, Failed}) ->
 aggregate_counts({failed, _, _, _, _, _}, {Passed, Skipped, Failed}) ->
     {Passed, Skipped, Failed + 1}.
 
-format_count(Count, Key, Glyph, Class) ->
+format_count(Count = 0, _Key, _Glyph, Class) ->
+    [
+        ct_ext_color:reset(),
+        ?TEST_NONE_GLYPH,
+        " ",
+        io_lib:format("~B ~s", [Count, Class]),
+        ct_ext_color:reset()
+    ];
+    format_count(Count, Key, Glyph, Class) ->
     [
         ct_ext_color:color(Key),
         Glyph,
