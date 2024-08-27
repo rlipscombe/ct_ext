@@ -1,10 +1,7 @@
 -module(ct_ext_report).
 -export([report/1]).
 
--define(APPLICATION, ct_ext).
-
 -include("glyphs.hrl").
--include("colors.hrl").
 
 report({passed, Suite, TestCase, StartedAt, EndedAt}) ->
     report_test_case(
@@ -112,32 +109,9 @@ format_reason(Reason) ->
     io_lib:format("    with ~p", [Reason]).
 
 format_elapsed_time(StartedAt, EndedAt) when is_integer(StartedAt), is_integer(EndedAt) ->
-    format_elapsed_time(EndedAt - StartedAt);
+    ct_ext_elapsed:format_elapsed_time(EndedAt - StartedAt);
 format_elapsed_time(_StartedAt, _EndedAt) ->
     [].
-
-format_elapsed_time(Elapsed) ->
-    ElapsedMs = erlang:convert_time_unit(Elapsed, native, millisecond),
-    [elapsed_color(ElapsedMs), " (", format_elapsed_time_ms(ElapsedMs), ")", ct_ext_color:reset()].
-
-format_elapsed_time_ms(ElapsedMs) ->
-    % TODO: Human readable timestamps for longer periods.
-    io_lib:format("~Bms", [ElapsedMs]).
-
-elapsed_color(ElapsedMs) ->
-    Thresholds = application:get_env(
-        ?APPLICATION, elapsed_thresholds, default_elapsed_thresholds()
-    ),
-    ct_ext_color:threshold(ElapsedMs, Thresholds, ?COLOR_BRIGHT_BLACK).
-
-default_elapsed_thresholds() ->
-    % Must be in reverse order by elapsed time.
-    [
-        {5000, ?COLOR_DARK_RED},
-        {2000, ?COLOR_DARK_YELLOW},
-        {1000, ?COLOR_DARK_WHITE},
-        {0, ?COLOR_BRIGHT_BLACK}
-    ].
 
 color(Key) ->
     ct_ext_color:color(Key).

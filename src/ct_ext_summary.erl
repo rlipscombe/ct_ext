@@ -10,12 +10,13 @@
 ]).
 
 -record(state, {
-    % erlang:monotonic_time, native units.
+    run_started_at,
     case_started_at,
     % list of completed test cases, with results
     cases = []
 }).
 
+-include("colors.hrl").
 -include("glyphs.hrl").
 
 -define(APPLICATION, ct_ext).
@@ -27,25 +28,25 @@ init(_Id, _Opts) ->
     % For some reason, Erlang doesn't output Unicode correctly when -noinput or -noshell are specified.
     % Fix that by setting the option back.
     io:setopts(standard_io, [{encoding, unicode}]),
-    State = #state{},
+    State = #state{run_started_at = ct_ext_elapsed:now()},
     {ok, State}.
 
 add_pass(Suite, TestCase, State = #state{case_started_at = StartedAt, cases = Cases}) ->
-    EndedAt = erlang:monotonic_time(),
+    EndedAt = ct_ext_elapsed:now(),
     State#state{cases = [{passed, Suite, TestCase, StartedAt, EndedAt} | Cases]}.
 
 add_failure(Suite, TestCase, Reason, State = #state{case_started_at = StartedAt, cases = Cases}) ->
-    EndedAt = erlang:monotonic_time(),
+    EndedAt = ct_ext_elapsed:now(),
     State#state{
         cases = [{failed, Suite, TestCase, Reason, StartedAt, EndedAt} | Cases]
     }.
 
 add_skipped(Suite, TestCase, Reason, State = #state{case_started_at = StartedAt, cases = Cases}) ->
-    EndedAt = erlang:monotonic_time(),
+    EndedAt = ct_ext_elapsed:now(),
     State#state{cases = [{skipped, Suite, TestCase, Reason, StartedAt, EndedAt} | Cases]}.
 
 pre_init_per_testcase(_Suite, _TestCase, InitData, State) ->
-    {InitData, State#state{case_started_at = erlang:monotonic_time()}}.
+    {InitData, State#state{case_started_at = ct_ext_elapsed:now()}}.
 
 post_init_per_testcase(
     Suite,
@@ -114,7 +115,8 @@ report_results(_State = #state{cases = Cases}) ->
     lists:foreach(fun ct_ext_report:report/1, lists:reverse(Cases)),
     io:put_chars(user, [ct_ext_color:reset(), "\r\n"]).
 
-report_counts(State) ->
+report_counts(State = #state{run_started_at = StartedAt}) ->
+    EndedAt = ct_ext_elapsed:now(),
     {PassedCount, SkippedCount, FailedCount} = aggregate_counts(State),
     TotalCount = PassedCount + SkippedCount + FailedCount,
     io:put_chars(user, [
@@ -126,6 +128,7 @@ report_counts(State) ->
         format_count(FailedCount, failed, ?TEST_FAILED_GLYPH, "failed"),
         " of ",
         io_lib:format("~B ~s", [TotalCount, pluralize(TotalCount, "case", "cases")]),
+        format_total_elapsed_time(StartedAt, EndedAt),
         ct_ext_color:eol()
     ]).
 
@@ -158,3 +161,9 @@ format_count(Count = 0, _Key, _Glyph, Class) ->
 
 pluralize(Count, Singular, _Plural) when Count == 1 -> Singular;
 pluralize(_Count, _Singular, Plural) -> Plural.
+
+format_total_elapsed_time(StartedAt, EndedAt) when is_integer(StartedAt), is_integer(EndedAt) ->
+    Thresholds = [{0, ?COLOR_BRIGHT_BLACK}],
+    ct_ext_elapsed:format_elapsed_time(EndedAt - StartedAt, Thresholds);
+format_total_elapsed_time(_StartedAt, _EndedAt) ->
+    [].
