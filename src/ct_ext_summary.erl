@@ -27,7 +27,7 @@ init(_Id, _Opts) ->
 
     % For some reason, Erlang doesn't output Unicode correctly when -noinput or -noshell are specified.
     % Fix that by setting the option back.
-    io:setopts(standard_io, [{encoding, unicode}]),
+    ok = io:setopts(standard_io, [{encoding, unicode}]),
     State = #state{run_started_at = ct_ext_elapsed:now()},
     {ok, State}.
 
