@@ -2,7 +2,7 @@
 
 Various extensions for Erlang's Common Test.
 
-This package provides the following hook:
+This package provides the following hooks:
 
 - `ct_ext_summary` -- pretty print a list of the succeeded and failed tests after the run has completed.
 - `ct_ext_ensure_started` -- automatically start an application before the test run begins.
@@ -10,8 +10,6 @@ This package provides the following hook:
 I plan to add other extensions in future.
 
 ## Usage
-
-This project only supports `erlang.mk` or directly using `ct_run`, since I'm not sure that `rebar3` needs it.
 
 ### Using `erlang.mk`
 
@@ -30,6 +28,23 @@ CT_OPTS = -ct_hooks $(CT_HOOKS) $(CT_OPTS)
 
 ```sh
 make ct
+```
+
+### Using `rebar3`
+
+```erlang
+{deps, [
+    {ct_ext, {git, "https://github.com/rlipscombe/ct_ext"}, {branch, "master"}}
+]}.
+
+{ct_opts, [
+    {ct_hooks, [
+        {ct_ext_ensure_started, [my_app]},
+        ct_ext_summary
+    ]}
+]}.
+
+{ct_readable, false}.
 ```
 
 ## Demonstration
