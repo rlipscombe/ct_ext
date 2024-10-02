@@ -34,7 +34,7 @@ make ct
 
 ```erlang
 {deps, [
-    {ct_ext, {git, "https://github.com/rlipscombe/ct_ext"}, {branch, "master"}}
+    {ct_ext, {git, "https://github.com/rlipscombe/ct_ext"}, {tag, "0.1.0"}}
 ]}.
 
 {ct_opts, [
