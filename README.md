@@ -23,7 +23,7 @@ CT_HOOKS = ct_ext_summary
 CT_HOOKS += and ct_ext_ensure_started $(APPLICATION)
 
 # -ct_hooks should come near the beginning of CT_OPTS.
-CT_OPTS = -ct_hooks $(CT_HOOKS) $(CT_OPTS)
+CT_OPTS := -ct_hooks $(CT_HOOKS) $(CT_OPTS)
 ```
 
 ```sh
